@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    container_name: devopsapp_web
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+
+      - ./db/data:/app/db/data
+
+      - .:/app
+    restart: unless-stopped

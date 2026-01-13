@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="card center-card">
+  <h2>Login</h2>
+  <p class="muted">Sign in using your account credentials.</p>
+
+  <form method="POST" action="/login" class="stack">
+    <input name="username" placeholder="Username" required>
+    <input name="password" type="password" placeholder="Password" required>
+    <button class="btn btn-primary" type="submit">Sign In</button>
+  </form>
+</div>
+{% endblock %}
