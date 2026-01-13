@@ -181,7 +181,6 @@ input:focus{
   background: #fbfbff;
 }
 
-/* Flash messages */
 .messages{
   margin-bottom: 12px;
   display:grid;

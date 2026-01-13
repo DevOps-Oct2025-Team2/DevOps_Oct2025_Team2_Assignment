@@ -10,13 +10,32 @@ from user_repo import (
     list_all_users,
     create_user,
     delete_user,
-    ensure_seed_admin
+    ensure_seed_admin,
 )
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-change-me")
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "DevOpsSecretKey")
+
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_PERMANENT=False,
+)
+
+RUN_ID = os.urandom(16).hex()
+
+
+@app.before_request
+def invalidate_sessions_on_restart():
+    if request.endpoint in ("login", "static"):
+        return
+
+    if "user_id" in session:
+        if session.get("run_id") != RUN_ID:
+            session.clear()
+            return redirect(url_for("login"))
 
 
 @app.route("/")
@@ -30,7 +49,7 @@ def home():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if "user_id" in session:
+    if "user_id" in session and session.get("run_id") == RUN_ID:
         return redirect(url_for("home"))
 
     if request.method == "POST":
@@ -50,9 +69,12 @@ def login():
             flash("Invalid username or password.", "error")
             return render_template("login.html")
 
+        session.clear()
         session["user_id"] = int(user["id"])
         session["username"] = user["username"]
         session["role"] = user["role"]
+        session["run_id"] = RUN_ID
+        session.permanent = False
 
         if user["role"] == "admin":
             return redirect(url_for("admin_dashboard"))
@@ -118,4 +140,11 @@ def dashboard():
 if __name__ == "__main__":
     init_db()
     ensure_seed_admin()
-    app.run(debug=True, host="0.0.0.0", port=5000)
+
+    port = 5000
+    print("\n==============================")
+    print("Open this in your browser:")
+    print(f"  http://127.0.0.1:{port}/login")
+    print("==============================\n")
+
+    app.run(debug=True, host="0.0.0.0", port=port)

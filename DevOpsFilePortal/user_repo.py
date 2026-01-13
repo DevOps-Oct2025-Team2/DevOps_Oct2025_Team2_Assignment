@@ -62,6 +62,6 @@ def ensure_seed_admin():
 
         if count == 0:
             create_user("admin", "admin123", "admin")
-            print("Seeded admin user: admin / admin123 (CHANGE THIS ASAP)")
+            print("Seeded admin user: admin / admin123")
     finally:
         conn.close()
