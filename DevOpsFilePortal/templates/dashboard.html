@@ -1,13 +1,133 @@
-{% extends "base.html" %}
-{% block title %}User Dashboard{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
-{% block content %}
-<div class="card">
-  <h2>User Dashboard</h2>
-  <p class="muted">Placeholder page. Next step: upload/download/delete files.</p>
-
-  <div style="margin-top:10px;">
-    <strong>Logged in as:</strong> {{ session.username }}
+  <div class="topbar">
+    <a class="brand-link" href="/">File Portal</a>
+    <div class="nav">
+      <span class="nav-text">Hi, {{ username }}</span>
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/logout">Logout</a>
+    </div>
   </div>
-</div>
-{% endblock %}
+
+  <div class="container">
+    {{ message_html|safe }}
+
+    <div class="card">
+      <h2>User Dashboard</h2>
+      <p class="muted">Upload / download / delete your own files only.</p>
+
+      <h3 style="margin-top:18px;">Upload File</h3>
+
+      <form id="uploadForm" method="POST" action="/dashboard/upload" enctype="multipart/form-data">
+        <div class="dropzone" id="dropzone">
+          <input id="fileInput" class="file-input" type="file" name="file" required>
+          <div class="dz-inner">
+            <div class="dz-title">Drop files here to start uploading</div>
+            <div class="dz-sub">or</div>
+            <label class="btn btn-primary dz-select" for="fileInput">Select File</label>
+
+            <div class="dz-meta" id="fileMeta" style="display:none;">
+              <span class="dz-filename" id="fileName"></span>
+              <button class="dz-clear" type="button" id="clearFile">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-actions">
+          <button class="btn btn-primary" type="submit" id="uploadBtn" disabled>Upload</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h3>Your Files</h3>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width:70px;">ID</th>
+            <th>Filename</th>
+            <th style="width:120px;">Size</th>
+            <th style="width:210px;">Uploaded</th>
+            <th style="width:220px;">
+              <div class="actions-head">
+                <span>Actions</span>
+                <span class="delete-head">Delete</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ files_rows_html|safe }}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    (function () {
+      const dz = document.getElementById("dropzone");
+      const input = document.getElementById("fileInput");
+      const meta = document.getElementById("fileMeta");
+      const nameEl = document.getElementById("fileName");
+      const clearBtn = document.getElementById("clearFile");
+      const uploadBtn = document.getElementById("uploadBtn");
+
+      function setFileUI(file) {
+        if (!file) {
+          meta.style.display = "none";
+          nameEl.textContent = "";
+          uploadBtn.disabled = true;
+          return;
+        }
+        meta.style.display = "flex";
+        nameEl.textContent = file.name;
+        uploadBtn.disabled = false;
+      }
+
+      input.addEventListener("change", () => {
+        setFileUI(input.files && input.files[0] ? input.files[0] : null);
+      });
+
+      clearBtn.addEventListener("click", () => {
+        input.value = "";
+        setFileUI(null);
+      });
+
+      ["dragenter", "dragover"].forEach(evt => {
+        dz.addEventListener(evt, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dz.classList.add("dragover");
+        });
+      });
+
+      ["dragleave", "drop"].forEach(evt => {
+        dz.addEventListener(evt, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dz.classList.remove("dragover");
+        });
+      });
+
+      dz.addEventListener("drop", (e) => {
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+          input.files = files;
+          setFileUI(files[0]);
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>
