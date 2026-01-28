@@ -1,0 +1,34 @@
+name: Promote - deploy to staging (PR)
+
+on:
+  workflow_run:
+    workflows: ["CI - deploy"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create_pr:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'deploy'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create PR if not exists (deploy -> staging)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=$(gh pr list --base staging --head deploy --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            echo "PR already exists: #$existing"
+            exit 0
+          fi
+
+          gh pr create \
+            --base staging \
+            --head deploy \
+            --title "Promote deploy -> staging (CI passed)" \
+            --body "Auto-generated after CI success on deploy. QA: merge when ready to test on staging."
