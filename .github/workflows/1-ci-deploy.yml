@@ -1,4 +1,4 @@
-name: CI - deploy - 
+name: CI - deploy
 
 on:
   push:
@@ -10,6 +10,9 @@ permissions:
 jobs:
   build-test-docker:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: DevOpsFilePortal
 
     steps:
       - name: Checkout
