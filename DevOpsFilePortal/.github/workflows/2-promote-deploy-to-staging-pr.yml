@@ -1,4 +1,4 @@
-name: Promote - deploy to staging (PR)
+name: Promote - deploy to staging
 
 on:
   workflow_run:
