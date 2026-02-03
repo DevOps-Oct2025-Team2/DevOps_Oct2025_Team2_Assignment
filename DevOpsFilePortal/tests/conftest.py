@@ -1,3 +1,4 @@
+#Garence Wong Kar Kang 
 import os
 import sys
 import importlib
@@ -7,12 +8,10 @@ import pytest
 
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
-    # Ensure project root (the folder containing app.py) is on sys.path
-    PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[1]  # DevOpsFilePortal/
+    PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[1] 
     if str(PROJECT_ROOT) not in sys.path:
         sys.path.insert(0, str(PROJECT_ROOT))
 
-    # Use isolated temp DB + uploads so tests never touch your real data
     db_dir = tmp_path / "db"
     upload_dir = tmp_path / "uploads"
     db_dir.mkdir()
@@ -23,7 +22,6 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("FLASK_SECRET_KEY", "test-secret")
     monkeypatch.setenv("SHOW_STARTUP_BANNER", "0")
 
-    # Import/reload app AFTER env vars are set
     import app as app_module
     importlib.reload(app_module)
 

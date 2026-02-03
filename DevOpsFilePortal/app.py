@@ -1,6 +1,9 @@
+#Garence Wong Kar Kang 
 import os
-import uuid
 import sys
+import uuid
+import time
+import requests
 from markupsafe import escape
 from flask import (
     Flask,
@@ -53,6 +56,52 @@ if not os.path.isabs(UPLOAD_DIR):
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app.config["MAX_CONTENT_LENGTH"] = int(os.getenv("MAX_CONTENT_LENGTH", "10485760"))
+
+_ALERT_LAST_SENT = {} 
+
+
+def trigger_github_login_alert(username: str):
+    if os.getenv("ENABLE_GH_LOGIN_ALERTS", "0") != "1":
+        return
+
+    owner = (os.getenv("GITHUB_OWNER") or "").strip()
+    repo = (os.getenv("GITHUB_REPO") or "").strip()
+    pat = (os.getenv("GITHUB_PAT") or "").strip()
+    if not owner or not repo or not pat:
+        return
+
+    ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    ua = (request.headers.get("User-Agent") or "")[:120]
+
+    # Cooldown to avoid spamming Actions
+    cooldown = int(os.getenv("LOGIN_ALERT_COOLDOWN", "30"))
+    key = f"{username}|{ip}"
+    now = time.time()
+    last = _ALERT_LAST_SENT.get(key, 0)
+    if now - last < cooldown:
+        return
+    _ALERT_LAST_SENT[key] = now
+
+    url = f"https://api.github.com/repos/{owner}/{repo}/dispatches"
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"token {pat}",
+        "User-Agent": "devops-file-portal",
+    }
+    payload = {
+        "event_type": "login_failed",
+        "client_payload": {
+            "username": username,
+            "ip": ip,
+            "user_agent": ua,
+            "note": "Invalid username/password attempt (demo monitoring alert)",
+        },
+    }
+
+    try:
+        requests.post(url, headers=headers, json=payload, timeout=5)
+    except Exception:
+        pass
 
 
 def build_message_html() -> str:
@@ -146,6 +195,8 @@ def build_files_rows_html(files) -> str:
     return "".join(rows)
 
 
+
+# Session invalidation on restart
 @app.before_request
 def invalidate_sessions_on_restart():
     if request.endpoint in ("login", "static") or request.endpoint is None:
@@ -155,6 +206,7 @@ def invalidate_sessions_on_restart():
         return redirect(url_for("login"))
 
 
+# Routes
 @app.route("/")
 def home():
     if "user_id" not in session:
@@ -179,6 +231,7 @@ def login():
 
         user = get_user_by_username(username)
         if not user or not check_password_hash(user["password_hash"], password):
+            trigger_github_login_alert(username)
             flash("Invalid username or password.", "error")
             return render_template("login.html", message_html=build_message_html())
 
@@ -362,6 +415,7 @@ if os.getenv("SHOW_STARTUP_BANNER", "1") == "1":
     sys.stdout.write("Open in browser: http://127.0.0.1:5000/login\n")
     sys.stdout.write("===================================\n\n")
     sys.stdout.flush()
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

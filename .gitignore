@@ -1,0 +1,19 @@
+# Secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+
+DevOpsFilePortal/db/data/*.db
+DevOpsFilePortal/uploads/
+
+# OS
+.DS_Store
+Thumbs.db
