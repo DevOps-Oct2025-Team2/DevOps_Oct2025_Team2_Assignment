@@ -1,4 +1,4 @@
-#Garence Wong Kar Kang 
+# Garence Wong Kar Kang
 name: Deploy - staging (publish docker image)
 
 on:
@@ -29,4 +29,4 @@ jobs:
         with:
           context: ./DevOpsFilePortal
           push: true
-          tags: ghcr.io/${{ github.repository }}:staging
+          tags: ghcr.io/${{ github.repository_owner }}/devops_oct2025_team2_assignment:staging
