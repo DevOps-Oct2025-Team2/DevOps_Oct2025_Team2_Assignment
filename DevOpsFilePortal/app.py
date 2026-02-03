@@ -61,13 +61,22 @@ _ALERT_LAST_SENT = {}
 
 
 def trigger_github_login_alert(username: str):
+    print(f"\n[DEBUG] Alert triggered for username: {username}")
+    
     if os.getenv("ENABLE_GH_LOGIN_ALERTS", "0") != "1":
+        print("[DEBUG] Alerts are disabled (ENABLE_GH_LOGIN_ALERTS != 1)")
         return
 
     owner = (os.getenv("GITHUB_OWNER") or "").strip()
     repo = (os.getenv("GITHUB_REPO") or "").strip()
     pat = (os.getenv("GITHUB_PAT") or "").strip()
+    
+    print(f"[DEBUG] Owner: {owner}")
+    print(f"[DEBUG] Repo: {repo}")
+    print(f"[DEBUG] PAT present: {bool(pat)}")
+    
     if not owner or not repo or not pat:
+        print("[DEBUG] Missing GitHub config (owner/repo/pat)")
         return
 
     ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
@@ -79,6 +88,7 @@ def trigger_github_login_alert(username: str):
     now = time.time()
     last = _ALERT_LAST_SENT.get(key, 0)
     if now - last < cooldown:
+        print(f"[DEBUG] Cooldown active. Wait {int(cooldown - (now - last))} more seconds")
         return
     _ALERT_LAST_SENT[key] = now
 
@@ -98,10 +108,17 @@ def trigger_github_login_alert(username: str):
         },
     }
 
+    print(f"[DEBUG] Sending POST to: {url}")
     try:
-        requests.post(url, headers=headers, json=payload, timeout=5)
-    except Exception:
-        pass
+        response = requests.post(url, headers=headers, json=payload, timeout=5)
+        print(f"[DEBUG] Response status: {response.status_code}")
+        print(f"[DEBUG] Response body: {response.text}")
+        if response.status_code == 204:
+            print("[DEBUG] ✓ Alert sent successfully!")
+        else:
+            print(f"[DEBUG] ✗ Failed with status {response.status_code}")
+    except Exception as e:
+        print(f"[DEBUG] Exception occurred: {type(e).__name__}: {e}")
 
 
 def build_message_html() -> str:
