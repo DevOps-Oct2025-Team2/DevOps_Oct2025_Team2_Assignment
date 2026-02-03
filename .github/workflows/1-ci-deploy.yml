@@ -4,6 +4,8 @@ name: CI - deploy
 on:
   push:
     branches: ["deploy"]
+  pull_request:
+    branches: ["staging", "main"]
 
 permissions:
   contents: read
