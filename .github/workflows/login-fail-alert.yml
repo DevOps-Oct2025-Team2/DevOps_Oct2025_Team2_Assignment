@@ -1,0 +1,25 @@
+#Garence Wong Kar Kang
+
+name: Login Failure Alert
+
+on:
+  repository_dispatch:
+    types: [login_failed]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show payload
+        run: |
+          echo "Login failure payload:"
+          echo '${{ toJson(github.event.client_payload) }}'
+
+      - name: Fail job to highlight in Actions
+        run: |
+          echo "Failing on purpose so it appears RED in GitHub Actions."
+          exit 1
