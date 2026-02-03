@@ -1,0 +1,35 @@
+<!-- Garence Wong Kar Kang -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <div class="topbar">
+    <a class="brand-link" href="/login">File Portal</a>
+    <div class="nav">
+      <a class="nav-link" href="/login">Login</a>
+    </div>
+  </div>
+
+  <div class="container">
+    {{ message_html|safe }}
+
+    <div class="card center-card">
+      <h2>Login</h2>
+      <p class="muted">Sign in using your account credentials.</p>
+
+      <form method="POST" action="/login" class="stack">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button class="btn btn-primary" type="submit" style="width:100%;">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>
