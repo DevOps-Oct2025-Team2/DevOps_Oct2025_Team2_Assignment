@@ -1,17 +1,15 @@
-#Garence Wong Kar Kang
-name: CI - Deploy
+name: CI - Deploy (test + docker + PR to staging)
 
 on:
   push:
     branches: ["deploy"]
-  pull_request:
-    branches: ["main"]
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
-  build-test-docker:
+  test-and-build:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -33,9 +31,31 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run unit tests
-        run: |
-          pytest -q
+        run: pytest -q
 
       - name: Docker build
+        run: docker build -t devops-file-portal:ci .
+
+  promote-to-staging:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (needed for gh auth context)
+        uses: actions/checkout@v4
+
+      - name: Create PR (deploy -> staging) if not exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          docker build -t devops-file-portal:ci .
+          existing=$(gh pr list --base staging --head deploy --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            echo "PR already exists: #$existing"
+            exit 0
+          fi
+
+          gh pr create \
+            --base staging \
+            --head deploy \
+            --title "Promote deploy -> staging (CI passed)" \
+            --body "Auto-generated after CI success on deploy. QA: merge when ready."
