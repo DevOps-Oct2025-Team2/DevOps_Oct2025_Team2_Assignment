@@ -23,7 +23,7 @@ Install:
 ### 1.2 Clone the Repository
 ```bash
 git clone https://github.com/DevOps-Oct2025-Team2/DevOps_Oct2025_Team2_Assignment.git
-cd DevOps_Oct2025_Team2_Assignment
+cd DevOpsFilePortal
 ```
 
 ---
