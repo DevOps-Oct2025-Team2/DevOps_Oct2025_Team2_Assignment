@@ -1,0 +1,24 @@
+﻿name: Notify on Merge to Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ Merge to main branch successful"
+          body: |
+            Code has been merged into the main branch.
+            CI/CD pipeline has completed successfully.
+          to: s10262480@connect.np.edu.sg
+          from: devops2026team2@gmail.com
