@@ -1,11 +1,11 @@
-#Garence Wong Kar Kang
+# Garence Wong Kar Kang
 name: CI - Deploy
 
 on:
   push:
     branches: ["deploy"]
   pull_request:
-    branches: ["main"]
+    branches: ["staging", "main"]
 
 permissions:
   contents: read
