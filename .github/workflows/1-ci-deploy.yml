@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   build-test-docker:
@@ -39,3 +40,26 @@ jobs:
       - name: Docker build
         run: |
           docker build -t devops-file-portal:ci .
+
+  promote-to-staging-pr:
+    name: Create PR deploy -> staging
+    needs: build-test-docker
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/deploy' && github.event_name == 'push'
+
+    steps:
+      - name: Create PR if not exists (deploy -> staging)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=$(gh pr list --base staging --head deploy --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            echo "PR already exists: #$existing"
+            exit 0
+          fi
+
+          gh pr create \
+            --base staging \
+            --head deploy \
+            --title "Promote deploy -> staging (CI passed)" \
+            --body "Auto-generated after CI success on deploy. QA: merge when ready to test on staging."
