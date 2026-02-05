@@ -82,16 +82,6 @@ def trigger_github_login_alert(username: str):
     ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
     ua = (request.headers.get("User-Agent") or "")[:120]
 
-    # Cooldown to avoid spamming Actions
-    cooldown = int(os.getenv("LOGIN_ALERT_COOLDOWN", "30"))
-    key = f"{username}|{ip}"
-    now = time.time()
-    last = _ALERT_LAST_SENT.get(key, 0)
-    if now - last < cooldown:
-        print(f"[DEBUG] Cooldown active. Wait {int(cooldown - (now - last))} more seconds")
-        return
-    _ALERT_LAST_SENT[key] = now
-
     url = f"https://api.github.com/repos/{owner}/{repo}/dispatches"
     headers = {
         "Accept": "application/vnd.github+json",
