@@ -1,6 +1,7 @@
 # Secrets
 .env
 *.env
+DevOpsFilePortal/.env
 
 # Python
 __pycache__/
