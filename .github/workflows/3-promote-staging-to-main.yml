@@ -9,7 +9,48 @@ permissions:
   pull-requests: write
 
 jobs:
+  verify-staging-readiness:
+    name: "✅ Verify Staging"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f DevOpsFilePortal/requirements.txt ]; then pip install -r DevOpsFilePortal/requirements.txt; fi
+
+      - name: Start App and Verify
+        run: |
+          cd DevOpsFilePortal
+          # Start app in background
+          python app.py &
+          APP_PID=$!
+          
+          echo "Waiting for application to start..."
+          # Wait loop for health check
+          for i in {1..10}; do
+            if curl -s -f http://localhost:5000 > /dev/null; then
+              echo "✅ Application is responding (HTTP 200)"
+              kill $APP_PID
+              exit 0
+            fi
+            sleep 2
+          done
+          
+          echo "❌ Application failed to respond within timeout"
+          kill $APP_PID
+          exit 1
+
   open-pr:
+    needs: verify-staging-readiness # Only open PR if smoke test passes
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
