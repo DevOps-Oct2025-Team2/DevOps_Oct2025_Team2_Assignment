@@ -1,5 +1,4 @@
-#Garence Wong Kar Kang 
-import os
+# Garence Wong Kar Kang
 import sys
 import importlib
 import pathlib
@@ -8,7 +7,7 @@ import pytest
 
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
-    PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[1] 
+    PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[1]
     if str(PROJECT_ROOT) not in sys.path:
         sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -24,6 +23,9 @@ def client(tmp_path, monkeypatch):
 
     import app as app_module
     importlib.reload(app_module)
+
+    app_module.init_db()
+    app_module.ensure_seed_admin()
 
     app_module.app.config.update(TESTING=True)
 
