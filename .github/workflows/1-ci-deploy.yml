@@ -33,14 +33,18 @@ jobs:
 
       - name: Run unit tests (generate XML)
         run: |
-          pytest -q --junitxml=pytest-report.xml
+          mkdir -p reports
+          pytest -q --junitxml=reports/pytest-report.xml
+          echo "=== DEBUG: list reports ==="
+          ls -la reports
 
       - name: Upload unit test report (XML)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-records
-          path: pytest-report.xml
+          path: DevOpsFilePortal/reports/pytest-report.xml
+          if-no-files-found: error
 
       - name: Docker build
         run: docker build -t devops-file-portal:ci .
@@ -50,9 +54,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Create PR (deploy -> staging) if not exists
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,3 +69,4 @@ jobs:
             --head deploy \
             --title "Promote deploy -> staging (CI passed)" \
             --body "Auto-generated after CI success on deploy. QA: merge when ready."
+
