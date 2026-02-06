@@ -1,5 +1,6 @@
-#Garence Wong Kar Kang 
+# Garence Wong Kar Kang
 from conftest import login
+
 
 def test_login_wrong_password_shows_error(client):
     res = login(client, "admin", "wrongpassword")
@@ -11,9 +12,10 @@ def test_login_admin_redirects_to_admin_dashboard(client):
     res = login(client, "admin", "admin123")
     assert res.status_code in (302, 303)
     assert "/admin" in res.headers.get("Location", "")
+    #assert "/adm1n" in res.headers.get("Location", "") # - To test failed Unit Test
 
 
-def test_logout_clears_session(client):
+def test_logout_blocks_admin_after_logout(client):
     res = login(client, "admin", "admin123")
     assert res.status_code in (302, 303)
 
@@ -31,7 +33,11 @@ def test_logout_clears_session(client):
 
 def test_admin_page_requires_admin(client):
     login(client, "admin", "admin123")
-    client.post("/admin/create_user", data={"username": "user1", "password": "pass1"}, follow_redirects=False)
+    client.post(
+        "/admin/create_user",
+        data={"username": "user1", "password": "pass1"},
+        follow_redirects=False,
+    )
     client.get("/logout", follow_redirects=False)
 
     res = login(client, "user1", "pass1")
