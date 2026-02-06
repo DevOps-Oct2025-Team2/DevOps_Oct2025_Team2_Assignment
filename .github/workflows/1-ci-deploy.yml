@@ -35,7 +35,6 @@ jobs:
         run: |
           mkdir -p reports
           pytest -q --junitxml=reports/pytest-report.xml
-          echo "=== DEBUG: list reports ==="
           ls -la reports
 
       - name: Upload unit test report (XML)
@@ -54,19 +53,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create PR (deploy -> staging) if not exists
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          existing=$(gh pr list --base staging --head deploy --state open --json number --jq '.[0].number')
-          if [ -n "$existing" ]; then
-            echo "PR already exists: #$existing"
-            exit 0
-          fi
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-          gh pr create \
-            --base staging \
-            --head deploy \
-            --title "Promote deploy -> staging (CI passed)" \
-            --body "Auto-generated after CI success on deploy. QA: merge when ready."
+      - name: Create PR (deploy -> staging)
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: staging
+          branch: deploy
+          title: "Promote deploy -> staging (CI passed)"
+          body: "Auto-generated after CI success on deploy. QA: merge when ready."
+          draft: false
+
 
