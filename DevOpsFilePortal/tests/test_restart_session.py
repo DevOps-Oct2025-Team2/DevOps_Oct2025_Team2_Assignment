@@ -1,6 +1,5 @@
 from conftest import login
 import importlib
-import app as app_module
 
 def test_session_invalidated_on_restart(client, monkeypatch):
     import app as app_module
