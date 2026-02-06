@@ -12,6 +12,7 @@ def test_login_admin_redirects_to_admin_dashboard(client):
     res = login(client, "admin", "admin123")
     assert res.status_code in (302, 303)
     assert "/admin" in res.headers.get("Location", "")
+    #assert "/adm1n" in res.headers.get("Location", "") - To test failed Unit Test
 
 
 def test_logout_blocks_admin_after_logout(client):

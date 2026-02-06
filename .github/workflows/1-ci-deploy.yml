@@ -36,12 +36,94 @@ jobs:
           mkdir -p test-reports
           pytest -q --junitxml=test-reports/pytest-junit.xml
 
-      - name: Upload test report artifact (XML)
+      - name: Build readable XML summary (for presentation)
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          junit_path = Path("test-reports/pytest-junit.xml")
+          out_path   = Path("test-reports/pytest-summary.xml")
+
+          root = ET.parse(junit_path).getroot()
+
+          # Handle either <testsuites><testsuite>...</testsuite></testsuites>
+          # or direct <testsuite>
+          suite = root.find("testsuite") if root.tag == "testsuites" else root
+
+          tests    = int(suite.attrib.get("tests", 0))
+          failures = int(suite.attrib.get("failures", 0))
+          errors   = int(suite.attrib.get("errors", 0))
+          skipped  = int(suite.attrib.get("skipped", 0))
+          time     = suite.attrib.get("time", "")
+          ts       = suite.attrib.get("timestamp", "")
+
+          passed = tests - failures - errors - skipped
+          failed = failures + errors
+
+          report = ET.Element("testReport", {"generator": "pytest-junit"})
+          ET.SubElement(report, "meta", {
+              "timestamp": ts,
+              "durationSeconds": str(time),
+              "total": str(tests),
+              "passed": str(passed),
+              "failed": str(failed),
+              "skipped": str(skipped),
+          })
+
+          cases_el = ET.SubElement(report, "cases")
+
+          for tc in suite.findall("testcase"):
+              name = tc.attrib.get("name", "")
+              classname = tc.attrib.get("classname", "")
+              duration = tc.attrib.get("time", "")
+
+              status = "PASSED"
+              message = ""
+
+              f = tc.find("failure")
+              e = tc.find("error")
+              s = tc.find("skipped")
+
+              if s is not None:
+                  status = "SKIPPED"
+                  message = (s.attrib.get("message") or "").strip()
+              elif f is not None:
+                  status = "FAILED"
+                  message = (f.attrib.get("message") or "").strip() or (f.text or "").strip()
+              elif e is not None:
+                  status = "ERROR"
+                  message = (e.attrib.get("message") or "").strip() or (e.text or "").strip()
+
+              # Trim message to keep it readable on screen
+              if message:
+                  message = " ".join(message.split())
+                  if len(message) > 220:
+                      message = message[:220] + "..."
+
+              attrs = {
+                  "name": name,
+                  "classname": classname,
+                  "durationSeconds": str(duration),
+                  "status": status,
+              }
+              if message:
+                  attrs["message"] = message
+
+              ET.SubElement(cases_el, "case", attrs)
+
+          tree = ET.ElementTree(report)
+          ET.indent(tree, space="  ", level=0)  # Python 3.9+
+          tree.write(out_path, encoding="utf-8", xml_declaration=True)
+          print(f"Wrote {out_path}")
+          PY
+
+      - name: Upload test report artifacts (XML)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-junit-xml
-          path: DevOpsFilePortal/test-reports/pytest-junit.xml
+          name: test-reports-xml
+          path: DevOpsFilePortal/test-reports/*.xml
           if-no-files-found: error
 
       - name: Docker build
@@ -70,6 +152,7 @@ jobs:
             --head deploy \
             --title "Promote deploy -> staging (CI passed)" \
             --body "Auto-generated after CI success on deploy. QA: merge when ready."
+
 
 
 
