@@ -1,4 +1,4 @@
-# Garence Wong Kar Kang
+#Garence Wong Kar Kang
 name: CI - Deploy (test + docker + PR to staging)
 
 on:
@@ -29,10 +29,18 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov
+          pip install pytest pytest-cov pytest-junitxml
 
-      - name: Run unit tests
-        run: pytest -q
+      - name: Run unit tests (generate XML)
+        run: |
+          pytest -q --junitxml=pytest-report.xml
+
+      - name: Upload unit test report (XML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-records
+          path: DevOpsFilePortal/pytest-report.xml
 
       - name: Docker build
         run: docker build -t devops-file-portal:ci .
@@ -60,4 +68,3 @@ jobs:
             --head deploy \
             --title "Promote deploy -> staging (CI passed)" \
             --body "Auto-generated after CI success on deploy. QA: merge when ready."
-
