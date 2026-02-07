@@ -4,10 +4,15 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types: [closed]
+    branches:
+      - main
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
     steps:
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
@@ -18,7 +23,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "✅ Merge to main branch successful"
           body: |
-            Code has been merged into the main branch.
+            Code has been promoted from staging to main.
             CI/CD pipeline has completed successfully.
           to: s10262480@connect.np.edu.sg
           from: devops2026team2@gmail.com
