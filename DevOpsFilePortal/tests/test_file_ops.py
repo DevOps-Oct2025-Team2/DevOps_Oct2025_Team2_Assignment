@@ -1,8 +1,7 @@
 import io
 from conftest import login
-from file_repo import list_files_for_user
-
 def test_user_can_upload_and_delete_file(client):
+    from file_repo import list_files_for_user
     # 1. Create a user via Admin (or just assume one if we had a helper, but let's use the admin route first)
     login(client, "admin", "admin123")
     client.post(

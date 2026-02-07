@@ -1,7 +1,6 @@
 from conftest import login
-from user_repo import get_user_by_username
-
 def test_admin_can_create_and_delete_user(client):
+    from user_repo import get_user_by_username
     # 1. Login as Admin
     login(client, "admin", "admin123")
 
