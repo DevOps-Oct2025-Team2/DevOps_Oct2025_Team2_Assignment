@@ -158,7 +158,20 @@ jobs:
           cmd_options: '-a -j'
           allow_issue_writing: false
           artifact_name: 'zap-full-scan'
-        continue-on-error: true
+      
+      - name: Fail if High alerts found
+        run: |
+          if [ -f report_json.json ]; then
+            high=$(python -c "import json; d=json.load(open('report_json.json')); \
+              alerts=d.get('site',[{}])[0].get('alerts',[]); \
+              print(sum(1 for a in alerts if str(a.get('riskdesc','')).lower().startswith('high')))")
+
+            echo "High alerts: $high"
+            if [ "$high" -gt 0 ]; then
+              echo "❌ Failing due to High risk ZAP alerts"
+              exit 1
+            fi
+          fi
       
       - name: Upload ZAP Reports
         if: always()
