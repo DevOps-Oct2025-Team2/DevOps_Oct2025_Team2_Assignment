@@ -39,7 +39,7 @@ jobs:
 
       - name: Run QA Tests (test_data_isolation)
         if: success() || failure()  # Run even if Dev tests fail to get full report
-        run: pytest tests/test_data_isolation.py -q --junitxml=test-reports/qa-junit.xml
+        run: pytest tests/test_data_isolation.py tests/test_admin_ops.py tests/test_file_ops.py -q --junitxml=test-reports/qa-junit.xml
 
       - name: Upload test report artifact (XML)
         if: always()
