@@ -1,18 +1,15 @@
 ﻿name: Notify on Merge to Main
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [closed]
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Promote - staging to main (PR + approval + merge)"]
+    types:
+      - completed
 
 jobs:
   notify:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
     steps:
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
