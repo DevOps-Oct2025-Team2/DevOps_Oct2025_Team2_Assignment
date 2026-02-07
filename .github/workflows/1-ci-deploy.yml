@@ -1,3 +1,4 @@
+#Garence Wong Kar Kang
 name: CI - Deploy (test + docker + PR to staging)
 
 on:
@@ -30,8 +31,23 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov
 
-      - name: Run unit tests
-        run: pytest -q
+      - name: Create test report directory
+        run: mkdir -p test-reports
+
+      - name: Run Dev Unit Tests (test_auth)
+        run: pytest tests/test_auth.py -q --junitxml=test-reports/dev-junit.xml
+
+      - name: Run QA Tests (test_data_isolation)
+        if: success() || failure()  # Run even if Dev tests fail to get full report
+        run: pytest tests/test_data_isolation.py tests/test_admin_ops.py tests/test_file_ops.py -q --junitxml=test-reports/qa-junit.xml
+
+      - name: Upload test report artifact (XML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-junit-xml
+          path: DevOpsFilePortal/test-reports/*.xml
+          if-no-files-found: error
 
       - name: Docker build
         run: docker build -t devops-file-portal:ci .
@@ -59,3 +75,8 @@ jobs:
             --head deploy \
             --title "Promote deploy -> staging (CI passed)" \
             --body "Auto-generated after CI success on deploy. QA: merge when ready."
+
+
+
+
+
