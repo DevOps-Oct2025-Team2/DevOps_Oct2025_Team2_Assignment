@@ -1,12 +1,14 @@
 ﻿name: Notify on Merge to Main
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Promote - staging to main (PR + approval + merge)"]
+    types:
+      - completed
 
 jobs:
   notify:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Send email notification
@@ -18,7 +20,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "✅ Merge to main branch successful"
           body: |
-            Code has been merged into the main branch.
+            Code has been promoted from staging to main.
             CI/CD pipeline has completed successfully.
           to: s10262480@connect.np.edu.sg
           from: devops2026team2@gmail.com
