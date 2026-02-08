@@ -1,14 +1,12 @@
-﻿name: Notify on Merge to Main
+﻿name: Notify on Deploy Commit
 
 on:
-  workflow_run:
-    workflows: ["Promote - staging to main (PR + approval + merge)"]
-    types:
-      - completed
+  push:
+    branches:
+      - deploy
 
 jobs:
   notify:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Send email notification
@@ -19,9 +17,9 @@ jobs:
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "✅ Merge to main branch successful"
+          subject: "🚀 Commit pushed to deploy branch"
           body: |
-            Code has been promoted from staging to main.
-            CI/CD pipeline has completed successfully.
+            A new commit has been pushed to the deploy branch.
+            This will trigger promotion to staging.
           to: s10262480@connect.np.edu.sg
           from: DevOps Team <devops2026team2@gmail.com>
