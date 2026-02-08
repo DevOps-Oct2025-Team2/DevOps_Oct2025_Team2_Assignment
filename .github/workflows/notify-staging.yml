@@ -1,9 +1,9 @@
-﻿name: Notify on Deploy Commit
+﻿name: Notify on Staging Promotion
 
 on:
   push:
     branches:
-      - deploy
+      - staging
 
 jobs:
   notify:
@@ -17,10 +17,9 @@ jobs:
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "🚀 Commit pushed to deploy branch"
+          subject: "📦 Code promoted to staging"
           body: |
-            A new commit has been pushed to the deploy branch.
-            This will trigger promotion to staging.
+            Code has been promoted from deploy to staging.
+            Next step: staging → main.
           to: s10262480@connect.np.edu.sg
           from: DevOps Team <devops2026team2@gmail.com>
-
