@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   verify-staging-readiness:
-    name: "✅ Verify Staging"
+    name: "Verify Staging"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,14 +38,14 @@ jobs:
           # Wait loop for health check
           for i in {1..10}; do
             if curl -s -f http://localhost:5000 > /dev/null; then
-              echo "✅ Application is responding (HTTP 200)"
+              echo "Application is responding (HTTP 200)"
               kill $APP_PID
               exit 0
             fi
             sleep 2
           done
           
-          echo "❌ Application failed to respond within timeout"
+          echo "Application failed to respond within timeout"
           kill $APP_PID
           exit 1
 
@@ -78,7 +78,7 @@ jobs:
     needs: open-pr
     runs-on: ubuntu-latest
 
-    # Requires manual approval
+    # Requires manual approval from scrum master
     environment: production
 
     steps:
