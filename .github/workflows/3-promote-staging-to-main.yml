@@ -78,7 +78,7 @@ jobs:
     needs: open-pr
     runs-on: ubuntu-latest
 
-    # Requires manual approval
+    # Requires manual approval from scrum master
     environment: production
 
     steps:
