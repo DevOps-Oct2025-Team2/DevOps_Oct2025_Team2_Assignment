@@ -50,3 +50,11 @@ def test_user_cannot_delete_other_users_file(client):
     res = client.post("/dashboard/delete/1", follow_redirects=False)
     # app redirects back to dashboard with "File not found."
     assert res.status_code in (302, 303)
+
+def test_download_invalid_file_id(client):
+    create_user_as_admin(client, "edgeuser", "edgepass")
+    login(client, "edgeuser", "edgepass")
+
+    res = client.get("/dashboard/download/9999", follow_redirects=False)
+
+    assert res.status_code == 404 or res.status_code in (302, 303)

@@ -48,3 +48,30 @@ def test_user_can_upload_and_delete_file(client):
     # 6. Verify file is gone
     files_after = list_files_for_user(user["id"])
     assert len(files_after) == 0
+
+def test_upload_without_file_rejected(client):
+    login(client, "admin", "admin123")
+
+    res = client.post("/dashboard/upload", data={}, follow_redirects=True)
+
+    assert res.status_code == 200
+    assert b"no file" in res.data.lower() or b"error" in res.data.lower()
+
+import io
+
+def test_upload_empty_filename_rejected(client):
+    login(client, "admin", "admin123")
+
+    data = {
+        "file": (io.BytesIO(b""), "")
+    }
+
+    res = client.post(
+        "/dashboard/upload",
+        data=data,
+        content_type="multipart/form-data",
+        follow_redirects=True
+    )
+
+    assert res.status_code == 200
+    assert b"invalid" in res.data.lower() or b"error" in res.data.lower()
