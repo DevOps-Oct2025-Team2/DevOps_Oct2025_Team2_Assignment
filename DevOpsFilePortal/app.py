@@ -50,7 +50,7 @@ app.config.update(
 
 RUN_ID = os.urandom(16).hex()
 
-UPLOAD_DIR = os.getenv("UPLOAD_DIR", "./uploads")
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "./submit")
 if not os.path.isabs(UPLOAD_DIR):
     UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), UPLOAD_DIR)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -324,7 +324,7 @@ def dashboard():
     )
 
 
-@app.route("/dashboard/upload", methods=["POST"])
+@app.route("/dashboard/submit", methods=["POST"])
 @login_required
 def dashboard_upload():
     if session.get("role") == "admin":
