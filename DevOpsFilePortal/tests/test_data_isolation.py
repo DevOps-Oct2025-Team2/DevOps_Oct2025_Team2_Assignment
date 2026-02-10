@@ -8,7 +8,7 @@ def create_user_as_admin(client, username, password):
 
 def upload_file(client, filename="a.txt", content=b"hello"):
     data = {"file": (BytesIO(content), filename)}
-    return client.post("/dashboard/upload", data=data, content_type="multipart/form-data", follow_redirects=False)
+    return client.post("/dashboard/submit", data=data, content_type="multipart/form-data", follow_redirects=False)
 
 def test_admin_cannot_use_user_dashboard(client):
     login(client, "admin", "admin123")
