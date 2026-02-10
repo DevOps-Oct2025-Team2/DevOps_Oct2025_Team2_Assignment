@@ -39,3 +39,28 @@ def test_admin_can_create_and_delete_user(client):
     # 6. Verify user is gone
     user_deleted = get_user_by_username("testuser")
     assert user_deleted is None
+
+def test_admin_delete_nonexistent_user(client):
+    login(client, "admin", "admin123")
+
+    res = client.post("/admin/delete_user/9999", follow_redirects=True)
+
+    # App should handle safely without crashing
+    assert res.status_code == 200
+
+def test_admin_cannot_create_duplicate_user(client):
+    login(client, "admin", "admin123")
+
+    client.post(
+        "/admin/create_user",
+        data={"username": "dupuser", "password": "pass"},
+        follow_redirects=True
+    )
+
+    res = client.post(
+        "/admin/create_user",
+        data={"username": "dupuser", "password": "pass"},
+        follow_redirects=True
+    )
+
+    assert b"exists" in res.data.lower() or b"error" in res.data.lower()

@@ -46,3 +46,17 @@ def test_admin_page_requires_admin(client):
 
     res2 = client.get("/admin", follow_redirects=False)
     assert res2.status_code in (302, 303)
+
+def test_login_missing_password_fails(client):
+    res = client.post(
+        "/login",
+        data={"username": "admin"},  
+        follow_redirects=True
+    )
+    assert res.status_code == 200
+    assert b"Invalid" in res.data or b"error" in res.data.lower()
+
+def test_login_empty_payload_fails(client):
+    res = client.post("/login", data={}, follow_redirects=True)
+    assert res.status_code == 200
+    assert b"Invalid" in res.data or b"error" in res.data.lower()
