@@ -20,7 +20,7 @@ def test_user_can_upload_and_delete_file(client):
         "file": (io.BytesIO(file_content), "test_file.txt")
     }
     res_upload = client.post(
-        "/dashboard/upload",
+        "/dashboard/submit",
         data=data,
         content_type="multipart/form-data",
         follow_redirects=True
